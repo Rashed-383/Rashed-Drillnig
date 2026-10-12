@@ -1,0 +1,247 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drilling Field Assistant</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1220;color:#edf4ff;font:15px Arial;line-height:1.6}
+main{max-width:1000px;margin:auto;padding:14px}
+header,.card{background:#142238;border:1px solid #30435c;border-radius:12px;padding:16px;margin-bottom:14px}
+h1{margin:0}h2{font-size:20px}
+.notice{background:#392d13;padding:12px;border-radius:8px;color:#ffe5a0}
+nav{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0}
+button{border:0;border-radius:7px;padding:11px;background:#38bdf8;color:#071522;font-weight:bold;cursor:pointer}
+nav button,.secondary{background:#293c55;color:white}
+nav .active{background:#38bdf8;color:#071522}
+.panel{display:none}.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+label{display:block;color:#a9bad0;font-size:13px;margin-bottom:4px}
+input,select,textarea{width:100%;padding:10px;background:#0b1220;color:white;border:1px solid #30435c;border-radius:7px}
+.metric{background:#0b1220;padding:12px;border-radius:8px;border:1px solid #30435c}
+.metric small{display:block;color:#a9bad0}
+.metric strong{font-size:21px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.step{padding:12px;background:#0b1220;border:1px solid #30435c;border-radius:8px;margin:10px 0}
+.step input{width:auto}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:600px}
+td,th{text-align:left;padding:8px;border-bottom:1px solid #30435c}
+.muted{color:#a9bad0;font-size:13px}
+@media(max-width:650px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:400px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>Drilling Field Assistant</h1>
+<p>Drilling Parameters | Liner Casing Job | Daily Log</p>
+<div class="notice">SAFETY: Use the approved well program and OEM procedures. Calculations are estimates, not operating limits.</div>
+</header>
+
+<nav>
+<button class="active" data-tab="drilling">Drilling Parameters</button>
+<button data-tab="liner">Liner Casing Job</button>
+<button data-tab="logs">Daily Log</button>
+<button data-tab="formulas">Formulas</button>
+</nav>
+
+<section id="drilling" class="panel active">
+<div class="card">
+<h2>1. Well Setup</h2>
+<div class="grid">
+<div><label>Well Type</label><select id="well"><option>Vertical</option><option>Deviated</option><option>Horizontal</option></select></div>
+<div><label>Inclination (degrees)</label><select id="angle"><option>0</option><option>10</option><option>20</option><option>30</option><option>40</option><option>50</option><option>60</option><option>70</option><option>80</option><option>89</option><option>90</option></select></div>
+<div><label>Hole Size (in)</label><select id="hole"><option>36</option><option>26</option><option selected>17.5</option><option>16</option><option>14.75</option><option>12.25</option><option>10.625</option><option>9.875</option><option>8.5</option><option>8.375</option><option>6.125</option><option value="custom">Custom</option></select></div>
+<div id="customBox" hidden><label>Custom Hole (in)</label><input id="customHole" type="number" step=".001"></div>
+<div><label>Pipe / BHA OD (in)</label><input id="pipe" type="number" value="5" step=".001"></div>
+<div><label>Flow Rate (GPM)</label><input id="flow" type="number" value="500"></div>
+<div><label>Mud Weight (PPG)</label><input id="mw" type="number" value="10" step=".1"></div>
+<div><label>TVD (m)</label><input id="tvd" type="number" value="1500"></div>
+<div><label>MD (m)</label><input id="md" type="number" value="1600"></div>
+</div>
+<div class="actions"><button id="calculate">Calculate</button><button class="secondary" id="reset">Reset</button></div>
+<p id="error" class="muted"></p>
+</div>
+
+<div class="card">
+<h2>2. Calculated Results</h2>
+<div class="metrics">
+<div class="metric"><small>Annular Capacity</small><strong id="capacity">—</strong><small>bbl/m</small></div>
+<div class="metric"><small>Annular Volume / 100 m</small><strong id="volume">—</strong><small>bbl</small></div>
+<div class="metric"><small>Annular Velocity</small><strong id="velocity">—</strong><small>m/min</small></div>
+<div class="metric"><small>Hydrostatic Pressure</small><strong id="pressure">—</strong><small>psi</small></div>
+</div>
+<p class="muted">Ideal concentric annulus, constant diameters and gauge hole. Does not account for eccentricity, tool joints, cuttings or rheology.</p>
+</div>
+
+<div class="card">
+<h2>3. Parameters to Monitor</h2>
+<div class="tablewrap"><table>
+<tr><th>Parameter</th><th>Monitor</th><th>Before adjustment</th></tr>
+<tr><td>WOB</td><td>ROP, torque, vibration</td><td>Bit, BHA and approved limits</td></tr>
+<tr><td>RPM</td><td>Stick-slip, vibration</td><td>Surface and motor RPM</td></tr>
+<tr><td>Flow Rate</td><td>Returns, SPP, hole cleaning</td><td>Pump and formation limits</td></tr>
+<tr><td>SPP</td><td>Pressure trend</td><td>Flow, mud properties, restrictions</td></tr>
+<tr><td>ROP</td><td>Penetration rate</td><td>Formation and hole cleaning</td></tr>
+<tr><td>Torque & Drag</td><td>Torque, pickup, slack-off</td><td>Approved torque/drag model</td></tr>
+<tr><td>ECD</td><td>Equivalent circulating density</td><td>Validated hydraulics model</td></tr>
+</table></div>
+</div>
+</section>
+
+<section id="liner" class="panel">
+<div class="card">
+<h2>Liner Casing Job Checklist</h2>
+<div class="grid">
+<div><label>Hanger Type</label><select id="hanger"><option>Hydraulic</option><option>Mechanical</option><option>Rotational / High Torque</option></select></div>
+<div><label>Job Type</label><select id="job"><option value="cemented">Cemented Liner</option><option value="uncemented">Uncemented Liner</option><option value="tieback">Tieback</option></select></div>
+</div>
+<div class="actions"><button id="loadSteps">Load Steps</button><button class="secondary" id="clearSteps">Clear Checks</button></div>
+<div id="steps"></div>
+<p id="progress" class="muted"></p>
+</div>
+</section>
+
+<section id="logs" class="panel">
+<div class="card">
+<h2>Daily Drilling Log</h2>
+<div class="grid">
+<div><label>Depth MD (m)</label><input id="ld" type="number"></div>
+<div><label>WOB (klbf)</label><input id="lw" type="number"></div>
+<div><label>RPM</label><input id="lr" type="number"></div>
+<div><label>Flow (GPM)</label><input id="lf" type="number"></div>
+<div><label>SPP (psi)</label><input id="lp" type="number"></div>
+<div><label>ROP (m/hr)</label><input id="lo" type="number"></div>
+<div><label>Mud Weight (PPG)</label><input id="lm" type="number"></div>
+<div><label>Notes</label><input id="ln"></div>
+</div>
+<div class="actions"><button id="add">Add Entry</button><button id="export" class="secondary">Export CSV</button></div>
+<div class="tablewrap"><table id="logTable"><tr><th>Depth (m)</th><th>WOB</th><th>RPM</th><th>Flow</th><th>SPP (psi)</th><th>ROP</th><th>MW</th><th>Notes</th></tr></table></div>
+</div>
+</section>
+
+<section id="formulas" class="panel">
+<div class="card">
+<h2>Engineering Formulas</h2>
+<p><b>Annular capacity (bbl/ft)</b></p>
+<p>(Hole diameter² − Pipe OD²) / 1029.4</p>
+<p><b>Annular capacity (bbl/m)</b></p>
+<p>Capacity (bbl/ft) × 3.28084</p>
+<p><b>Annular volume (bbl)</b></p>
+<p>Capacity (bbl/m) × length (m)</p>
+<p><b>Annular velocity (ft/min)</b></p>
+<p>24.51 × Flow (GPM) / (Hole² − Pipe OD²)</p>
+<p><b>Hydrostatic pressure (psi)</b></p>
+<p>0.052 × Mud Weight (PPG) × TVD (ft)</p>
+<p><b>Convert TVD from m to ft</b></p>
+<p>TVD (m) × 3.28084</p>
+<p class="muted">These formulas do not calculate SPP, ECD, surge/swab, torque and drag or kick tolerance.</p>
+<p><a href="https://glossary.slb.com/" target="_blank">SLB Oilfield Glossary</a></p>
+<p><a href="https://www.iwcf.org/" target="_blank">IWCF</a></p>
+<p><a href="https://www.iadc.org/" target="_blank">IADC</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+ document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+ b.classList.add("active");$(b.dataset.tab).classList.add("active");
+});
+
+$("hole").onchange=()=>{$("customBox").hidden=$("hole").value!=="custom"};
+
+function calculate(){
+ const dh=$("hole").value==="custom"?Number($("customHole").value):Number($("hole").value);
+ const dp=Number($("pipe").value),q=Number($("flow").value);
+ const mw=Number($("mw").value),tvd=Number($("tvd").value),md=Number($("md").value);
+ if(![dh,dp,q,mw,tvd,md].every(Number.isFinite)||dh<=dp||dp<=0||q<0||mw<=0||tvd<0||md<tvd){
+  $("error").textContent="Invalid input. Hole must exceed pipe OD; TVD must not exceed MD; MW must be positive.";return;
+ }
+ const diff=dh*dh-dp*dp;
+ const cap=diff/1029.4*3.28084;
+ $("capacity").textContent=cap.toFixed(4);
+ $("volume").textContent=(cap*100).toFixed(2);
+ $("velocity").textContent=((24.51*q/diff)/3.28084).toFixed(2);
+ $("pressure").textContent=(0.052*mw*tvd*3.28084).toFixed(1);
+ $("error").textContent="Hydrostatic pressure uses TVD in meters converted to feet.";
+}
+$("calculate").onclick=calculate;
+$("reset").onclick=()=>{
+ $("well").value="Vertical";$("angle").value="0";$("hole").value="17.5";
+ $("pipe").value=5;$("flow").value=500;$("mw").value=10;
+ $("tvd").value=1500;$("md").value=1600;$("customHole").value="";
+ $("customBox").hidden=true;calculate();
+};
+calculate();
+
+const common=[
+["Pre-job meeting","Review roles, barriers, well-control readiness, lifting plan, communication and stop-work criteria."],
+["Review approved program","Confirm liner schematic, depth, hanger model, running tool, pressure limits and OEM procedure."],
+["Inspect and tally liner","Verify size, grade, connections, tally, drift and all accessories."],
+["Make up liner assembly","Install shoe, float equipment, centralizers and accessories per the approved tally."],
+["Check running tool","Confirm compatibility, seals, connections, release mechanism and documented limits."],
+["RIH with liner","Follow approved running speed, fill-up and circulation procedures. Monitor well conditions."],
+["Monitor while running","Record depth, hookload, torque, fill volumes and circulation response. Investigate anomalies."],
+["Reach planned depth","Confirm tally, depth correlation and hole condition against the approved program."]
+];
+const hangerSteps={
+"Hydraulic":[["Set hydraulic hanger","Follow the exact OEM setting sequence and specified pressure criteria. Do not assume a universal set pressure."],["Verify setting","Use the prescribed OEM verification and load-transfer method."]],
+"Mechanical":[["Set mechanical hanger","Follow the exact model-specific mechanical setting sequence. Do not assume a universal rotation or set-down weight."],["Verify setting","Confirm the OEM-defined setting indicators and load transfer."]],
+"Rotational / High Torque":[["Set rotational hanger","Follow the exact OEM torque/rotation sequence and limits."],["Verify setting","Use the specified verification procedure and approved criteria."]]
+};
+function loadSteps(){
+ const type=$("hanger").value,job=$("job").value;
+ let list=[...common,...hangerSteps[type]];
+ if(job==="cemented")list.push(
+ ["Prepare cement job","Verify cement program, slurry volumes, spacer compatibility, displacement calculation, float equipment and pressure limits."],
+ ["Pump cement and displace","Execute the approved cementing program and monitor volumes, returns and pressures. Stop and respond per contingency procedure."]
+ );
+ if(job==="uncemented")list.push(["Confirm uncemented plan","Verify the approved isolation, hanger and seal arrangement; do not apply cementing steps unless specified."]);
+ if(job==="tieback")list.push(["Prepare tieback","Verify tieback string tally, seal assembly, receptacle condition and approved running procedure."]);
+ list.push(
+ ["Release running tool","Follow the exact OEM release sequence and verify the specified release indicators."],
+ ["Post-job verification","Record final depth, pressures, volumes, anomalies and any unresolved issues."],
+ ["WOC / next operation","For cemented jobs, follow the approved WOC and verification plan before the next operation."]
+ );
+ $("steps").innerHTML=list.map((s,i)=>`<div class="step"><label><input type="checkbox" class="ck"><span><b>${i+1}. ${s[0]}</b><br>${s[1]}</span></label></div>`).join("");
+ document.querySelectorAll(".ck").forEach(c=>c.onchange=progress);
+ progress();
+}
+function progress(){
+ const all=[...document.querySelectorAll(".ck")];
+ $("progress").textContent="Completed: "+all.filter(c=>c.checked).length+" / "+all.length+" steps";
+}
+$("loadSteps").onclick=loadSteps;
+$("clearSteps").onclick=()=>{document.querySelectorAll(".ck").forEach(c=>c.checked=false);progress()};
+loadSteps();
+
+let logs=[];
+$("add").onclick=()=>{
+ const ids=["ld","lw","lr","lf","lp","lo","lm","ln"];
+ const vals=ids.map(id=>$(id).value);
+ if(!vals[0]){alert("Enter depth in meters.");return}
+ logs.push(vals);
+ const row=$("logTable").insertRow();
+ vals.forEach(v=>row.insertCell().textContent=v);
+ ids.forEach(id=>$(id).value="");
+};
+$("export").onclick=()=>{
+ if(!logs.length){alert("No log entries.");return}
+ const header=["Depth MD (m)","WOB (klbf)","RPM","Flow (GPM)","SPP (psi)","ROP (m/hr)","MW (PPG)","Notes"];
+ const csv=[header,...logs].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n");
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));
+ a.download="drilling-log.csv";a.click();URL.revokeObjectURL(a.href);
+};
+</script>
+</body>
+</html>
